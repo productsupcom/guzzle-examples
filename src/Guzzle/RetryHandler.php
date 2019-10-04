@@ -10,6 +10,8 @@ use Psr\Log\LoggerInterface;
 
 class RetryHandler
 {
+    public const RETRIES_MAX = 3;
+
     private $logger;
 
     /**
@@ -35,8 +37,14 @@ class RetryHandler
             Response $response = null,
             \Exception $exception = null
         ) {
+
+            // Only for read requests
+            if (!\in_array($request->getMethod(), ['GET', 'HEAD'])) {
+                return false;
+            }
+
             // Don't retry if we have run out of retries.
-            if ($retries >= 5) {
+            if ($retries >= self::RETRIES_MAX) {
                 return false;
             }
 
